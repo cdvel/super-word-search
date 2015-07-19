@@ -6,6 +6,10 @@ package co.velandia.superwordsearch;
  * @author cesar
  */
 public class GridCoordinates {
+
+    boolean isOccupied() {
+        return state == CoordinatesState.OCCUPPIED;
+    }
     
     public enum CoordinatesState {
         EMPTY, OCCUPPIED
@@ -72,7 +76,7 @@ public class GridCoordinates {
 
     @Override
     public String toString() {
-        String mark = (state==CoordinatesState.OCCUPPIED)?"":"_";
+        String mark = (state==CoordinatesState.OCCUPPIED)?"*":"_";
         return "("+row+", "+column+")"+mark;
     }
     

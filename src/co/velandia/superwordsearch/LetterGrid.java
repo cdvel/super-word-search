@@ -35,6 +35,10 @@ public class LetterGrid {
         return columnCount;
     }
 
+    void setMode(Mode searchMode) {
+        mode = searchMode;
+    }
+
     public enum Directions {
 
         N, NE, E, SE, S, SW, W, NW
@@ -46,22 +50,13 @@ public class LetterGrid {
     
     private Map<String, List<GridCoordinates>> letterGrid = new HashMap<>();
     
-
     public LetterGrid() {
         this.columnCount = 0;
         this.rowCount = 0;
     }
-    
-    public void findWord(String word) {
-        //searchLetter -> searchInAllDirections
-    }
 
     public List<GridCoordinates> getLetterCoordinates(String letter) {
         return letterGrid.get(letter);
-    }
-
-    public void findWordInDirection(String word, int[] position) {
-        //call searchInDirection(word, position, direction) for all directions
     }
 
     public void setRow(char[] letters, int rowIndex, int letterRowCount) {
@@ -81,35 +76,6 @@ public class LetterGrid {
             columnIndex++;
         }
       
-    }
-
-    @Override
-    public String toString() {
-        Iterator it = letterGrid.entrySet().iterator();
-        StringBuilder buffer = new StringBuilder();
-
-        while (it.hasNext()) {
-            Map.Entry pair = (Map.Entry) it.next();
-            buffer.append(pair.getKey()).append(" -> ").append(pair.getValue()).append("\n");
-        }
-        //it.remove();
-        return buffer.toString();
-    }
-
-    public GridCoordinates wrapAround(GridCoordinates current) {
-        if (current.row < 0) 
-            current.row = rowCount-1;
-        
-        if (current.row >= rowCount) 
-            current.row = 0;
-        
-        if (current.column < 0) 
-            current.column = columnCount-1;
-        
-        if (current.column >= columnCount) 
-            current.column = 0;
-
-        return current;
     }
 
     public GridCoordinates shift(GridCoordinates current, Directions direction) {
@@ -152,19 +118,23 @@ public class LetterGrid {
         // if invalid, return original coordinates
         return current;
     }
+    
+        public GridCoordinates wrapAround(GridCoordinates current) {
+        if (current.row < 0) 
+            current.row = rowCount-1;
+        
+        if (current.row >= rowCount) 
+            current.row = 0;
+        
+        if (current.column < 0) 
+            current.column = columnCount-1;
+        
+        if (current.column >= columnCount) 
+            current.column = 0;
 
-//    public List<GridCoordinates> getNeighbors(GridCoordinates){
-//        
-//        List<GridCoordinates> neighbors = new ArrayList<>();
-//        
-//        for (Directions direction : Directions.values()){
-//            
-//        }
-//        
-//        return null;
-//    }
-    
-    
+        return current;
+    }
+
     /***
      * Get direction between 2 adjacent coordinates, or null
      * @param x
@@ -203,6 +173,18 @@ public class LetterGrid {
     
     private boolean isCoordinatePairValid(GridCoordinates coordinates) {
         return  (coordinates.row >= 0 && coordinates.row < rowCount  && coordinates.column >= 0 && coordinates.column < columnCount);
+    }
+    
+    @Override
+    public String toString() {
+        Iterator it = letterGrid.entrySet().iterator();
+        StringBuilder buffer = new StringBuilder();
+
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry) it.next();
+            buffer.append(pair.getKey()).append(" -> ").append(pair.getValue()).append("\n");
+        }
+        return buffer.toString();
     }
 
 }

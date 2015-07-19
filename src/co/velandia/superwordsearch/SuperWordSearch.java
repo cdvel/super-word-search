@@ -26,6 +26,11 @@ public class SuperWordSearch {
         for (GridCoordinates coordinatePair : coordinates)
             coordinatePair.setEmpty();
     }
+
+    private void setMode(String line) {
+        searchMode = (line.trim().equalsIgnoreCase("WRAP"))? Mode.WRAP: Mode.NO_WRAP;
+        gridWorld.setMode(searchMode);
+    }
     
     public enum Mode {
         WRAP, NO_WRAP, NOT_SET 
@@ -70,9 +75,8 @@ public class SuperWordSearch {
                         gridWorld.setRow(letters, linesRead, gridWorld.getColumnCount());
                         linesRead++;
                     }else{
-                        if (searchMode == Mode.NOT_SET){
-                            searchMode = (line.trim().equalsIgnoreCase("WRAP"))? Mode.WRAP: Mode.NO_WRAP;
-                        }
+                        if (searchMode == Mode.NOT_SET)
+                            setMode(line); 
                         else{
 
                             if (pWords == 0){
@@ -122,35 +126,42 @@ public class SuperWordSearch {
                 else{
                     prev = streak.get(streak.size()-1);
                     curr = set.get(0);
-                    curr.setOccupied();
+                    //System.out.println("state curr?"+curr.state);
+//                    if (curr.isOccupied())
+//                        break;
+//                    else
+                    
                     if (!prev.equals(curr)){
                         
-                        System.out.println("comparing= "+prev +" and "+curr );
+                        //System.out.println("comparing= "+prev +" and "+curr );
                         Directions evalDir = gridWorld.compareCoordinates(prev, curr);
                         if (streakDir == null)
                             streakDir = evalDir;
                         
-                        if (streakDir != null && streakDir == evalDir){
+                        if (streakDir != null && streakDir == evalDir && !curr.isOccupied()){
                             //mark as occupied
-                            System.out.println("NOT null= : "+streak);
+                            
+                            //System.out.println("NOT null= : "+streakDir);
                         }else
                         {
                             //NOTE: means streak failed, rollback positions, stop search
-                            System.out.println("Is null");
+                            //System.out.println("Is null");
                             resetStates(streak);
                             break;
                         }
-                        
+                        curr.setOccupied();
                         streak.add(curr);
                     }    
                 }
             }
             
-            if (streak.size() == word.length())
+            if (streak.size() == word.length()){
                 System.out.println(streak.get(0)+" "+streak.get(streak.size()-1));
+                resetStates(streak);
+            }
             else
-                System.out.println("NOT FOUND");
-            System.out.println("==> "+streak);
+            System.out.println("NOT FOUND");
+            //System.out.println("==> "+streak);
         }
 
     }
@@ -171,6 +182,8 @@ public class SuperWordSearch {
             sws.loadFromFile("C:\\sws\\3x3_no_wrap.txt");
             sws.print();
             sws.exploreWordSets();
+            //sws.print();
+
             
         } catch (IOException ex) {
             Logger.getLogger(SuperWordSearch.class.getName()).log(Level.SEVERE, null, ex);
