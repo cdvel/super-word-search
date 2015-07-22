@@ -1,6 +1,5 @@
 package co.velandia.superwordsearch;
 
-
 import co.velandia.superwordsearch.SuperWordSearch.Mode;
 import static co.velandia.superwordsearch.SuperWordSearch.Mode;
 import java.util.ArrayList;
@@ -44,19 +43,19 @@ public class LetterGrid {
         N, NE, E, SE, S, SW, W, NW
     }
 
-    private int rowCount;
-    private int columnCount;
-    private Mode mode = Mode.NO_WRAP;
-    
+    private static int rowCount;
+    private static int columnCount;
+    private static Mode mode = Mode.NO_WRAP;
+
     private Map<String, List<GridCoordinates>> letterGrid = new HashMap<>();
-    
+
     public LetterGrid() {
         this.columnCount = 0;
         this.rowCount = 0;
     }
 
     public List<GridCoordinates> getLetterCoordinates(String letter) {
-        return letterGrid.get(letter);
+        return new ArrayList<GridCoordinates>(letterGrid.get(letter));
     }
 
     public void setRow(char[] letters, int rowIndex, int letterRowCount) {
@@ -75,10 +74,10 @@ public class LetterGrid {
             this.letterGrid.put("" + letter, coordinates);
             columnIndex++;
         }
-      
+
     }
 
-    public GridCoordinates shift(GridCoordinates current, Directions direction) {
+    public static GridCoordinates shift(GridCoordinates current, Directions direction) {
         GridCoordinates next = new GridCoordinates(current);
 
         switch (direction) {
@@ -109,72 +108,89 @@ public class LetterGrid {
         }
 
         if (mode == Mode.WRAP) {
-            next = wrapAround(next);
+            wrapAround(next);
         }
 
-        if (isCoordinatePairValid(next)) {
+        if (isCoordinatePairValid(next))
             return next;
-        }
+        
         // if invalid, return original coordinates
         return current;
     }
-    
-        public GridCoordinates wrapAround(GridCoordinates current) {
-        if (current.row < 0) 
-            current.row = rowCount-1;
-        
-        if (current.row >= rowCount) 
+
+    public static GridCoordinates wrapAround(GridCoordinates current) {
+        if (current.row < 0) {
+            current.row = rowCount - 1;
+        }
+
+        if (current.row >= rowCount) {
             current.row = 0;
-        
-        if (current.column < 0) 
-            current.column = columnCount-1;
-        
-        if (current.column >= columnCount) 
+        }
+
+        if (current.column < 0) {
+            current.column = columnCount - 1;
+        }
+
+        if (current.column >= columnCount) {
             current.column = 0;
+        }
 
         return current;
     }
 
-    /***
+    /**
+     * *
      * Get direction between 2 adjacent coordinates, or null
+     *
      * @param x
      * @param y
-     * @return 
+     * @return
      */
-    public Directions compareCoordinates(GridCoordinates x, GridCoordinates y){
-        
-        if (shift(x, Directions.N).equals(y)) 
+    public static Directions compareCoordinates(GridCoordinates x, GridCoordinates y) {
+
+        if (x == null || y == null) {
+            return null;
+        }
+
+        if (shift(x, Directions.N).equals(y)) {
             return Directions.N;
+        }
 
-        if (shift(x, Directions.NE).equals(y)) 
+        if (shift(x, Directions.NE).equals(y)) {
             return Directions.NE;
+        }
 
-        if (shift(x, Directions.E).equals(y)) 
+        if (shift(x, Directions.E).equals(y)) {
             return Directions.E;
+        }
 
-        if (shift(x, Directions.SE).equals(y)) 
+        if (shift(x, Directions.SE).equals(y)) {
             return Directions.SE;
+        }
 
-        if (shift(x, Directions.S).equals(y)) 
+        if (shift(x, Directions.S).equals(y)) {
             return Directions.S;
+        }
 
-        if (shift(x, Directions.SW).equals(y)) 
+        if (shift(x, Directions.SW).equals(y)) {
             return Directions.SW;
+        }
 
-        if (shift(x, Directions.W).equals(y)) 
-            return Directions.W;                    
+        if (shift(x, Directions.W).equals(y)) {
+            return Directions.W;
+        }
 
-        if (shift(x, Directions.NW).equals(y)) 
-            return Directions.NW;              
+        if (shift(x, Directions.NW).equals(y)) {
+            return Directions.NW;
+        }
 
         return null;
     }
-    
-    
-    private boolean isCoordinatePairValid(GridCoordinates coordinates) {
-        return  (coordinates.row >= 0 && coordinates.row < rowCount  && coordinates.column >= 0 && coordinates.column < columnCount);
+
+    private static boolean isCoordinatePairValid(GridCoordinates coordinates) {
+        return (coordinates.row >= 0 && coordinates.row < rowCount && coordinates.column >= 0 && coordinates.column < columnCount);
     }
-    
+
     @Override
     public String toString() {
         Iterator it = letterGrid.entrySet().iterator();

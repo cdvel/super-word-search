@@ -1,4 +1,3 @@
-
 package co.velandia.superwordsearch;
 
 /**
@@ -7,53 +6,55 @@ package co.velandia.superwordsearch;
  */
 public class GridCoordinates {
 
-    boolean isOccupied() {
-        return state == CoordinatesState.OCCUPPIED;
-    }
-    
+    // TODO: revise use of visited
     public enum CoordinatesState {
-        EMPTY, OCCUPPIED
-    };
-    
-    void setEmpty() {
-        state = CoordinatesState.EMPTY;
-    }
-    
-    void setOccupied() {
-        state = CoordinatesState.OCCUPPIED;
-    }
 
-    
+        EMPTY, OCCUPPIED, VISITED
+    };
+
     int row;
     int column;
     boolean wrap = false;
     CoordinatesState state;
-    
 
-    public GridCoordinates (int row, int column) {
+    public GridCoordinates(int row, int column) {
 //        this.index = row+column;
         this.row = row;
         this.column = column;
         state = CoordinatesState.EMPTY;
-                
+
     }
 
-    public boolean equals(GridCoordinates obj) {
-        return (this.row == obj.row && this.column == obj.column);
-    }
-    
-    
-    
     /**
      * Copy constructor
-     * @param copy 
+     *
+     * @param copy
      */
-    public GridCoordinates(GridCoordinates copy){
+    public GridCoordinates(GridCoordinates copy) {
         this.row = copy.row;
         this.column = copy.column;
         this.state = copy.state;
     }
-    
+
+    void setEmpty() {
+        state = CoordinatesState.EMPTY;
+    }
+
+    void setOccupied() {
+        state = CoordinatesState.OCCUPPIED;
+    }
+
+    boolean isOccupied() {
+        return state == CoordinatesState.OCCUPPIED;
+    }
+
+    public boolean equals(GridCoordinates obj) {
+        if (obj == null) {
+            return false;
+        }
+        return (this.row == obj.row && this.column == obj.column);
+    }
+
     GridCoordinates shiftUp() {
         row--;
         return this;
@@ -76,8 +77,8 @@ public class GridCoordinates {
 
     @Override
     public String toString() {
-        String mark = (state==CoordinatesState.OCCUPPIED)?"*":"_";
-        return "("+row+", "+column+")"+mark;
+        String mark = (state == CoordinatesState.OCCUPPIED) ? "*" : "_";
+        return "(" + row + ", " + column + ")" + mark;
     }
-    
+
 }
