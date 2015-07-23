@@ -6,10 +6,8 @@
 
 package co.velandia.superwordsearch;
 
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 /**
  *
@@ -18,7 +16,6 @@ import java.util.Set;
 public class WordTreeNode<T>
     {
         private LinkedList<WordTreeNode<T>> children = new LinkedList<>();
-        private Set<WordTreeNode<T>> visited = new HashSet<>();
         public T value;
         public int level=1;
 
@@ -66,7 +63,7 @@ public class WordTreeNode<T>
             for (int i = 0; i < level; i++) { 
                 out.append("\t");
             }
-            
+            //TODO change object
             Object current = (this.value == null)?"root":this.value;
             out.append(current);
             
@@ -142,5 +139,16 @@ public class WordTreeNode<T>
                 }
             }
         }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof  WordTreeSearch)
+        {
+            WordTreeNode node = (WordTreeNode)obj;
+            return node.value == value;
+        }
+        return false;
+    }
+        
                 
     }

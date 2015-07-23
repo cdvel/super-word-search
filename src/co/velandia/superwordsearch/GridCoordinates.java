@@ -1,5 +1,7 @@
 package co.velandia.superwordsearch;
 
+import co.velandia.superwordsearch.LetterGrid.Directions;
+
 /**
  *
  * @author cesar
@@ -15,13 +17,13 @@ public class GridCoordinates {
     int row;
     int column;
     boolean wrap = false;
-    CoordinatesState state;
+    Directions state;
 
     public GridCoordinates(int row, int column) {
 //        this.index = row+column;
         this.row = row;
         this.column = column;
-        state = CoordinatesState.EMPTY;
+        state = null;
 
     }
 
@@ -36,16 +38,16 @@ public class GridCoordinates {
         this.state = copy.state;
     }
 
-    void setEmpty() {
-        state = CoordinatesState.EMPTY;
+    void unset() {
+        state = null;
     }
 
-    void setOccupied() {
-        state = CoordinatesState.OCCUPPIED;
+    void setState(Directions state) {
+        this.state = state;
     }
 
-    boolean isOccupied() {
-        return state == CoordinatesState.OCCUPPIED;
+    boolean isSet() {
+        return state != null;
     }
 
     public boolean equals(GridCoordinates obj) {
@@ -77,8 +79,21 @@ public class GridCoordinates {
 
     @Override
     public String toString() {
-        String mark = (state == CoordinatesState.OCCUPPIED) ? "*" : "_";
+        String mark = "";
+        if (state != null)       
+            mark = (state == null) ? "_" : state.name();
         return "(" + row + ", " + column + ")" + mark;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof GridCoordinates){
+            GridCoordinates co = (GridCoordinates) obj;
+            return row == co.row && column == co.column;
+        }
+        return false;
+    }
+    
+    
 
 }

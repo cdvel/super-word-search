@@ -1,6 +1,5 @@
 package co.velandia.superwordsearch;
 
-import co.velandia.superwordsearch.SuperWordSearch.Mode;
 import static co.velandia.superwordsearch.SuperWordSearch.Mode;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,7 +39,7 @@ public class LetterGrid {
 
     public enum Directions {
 
-        N, NE, E, SE, S, SW, W, NW
+        N, NE, E, SE, S, SW, W, NW, NONE
     }
 
     private static int rowCount;

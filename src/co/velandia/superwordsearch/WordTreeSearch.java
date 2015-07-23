@@ -42,9 +42,9 @@ public class WordTreeSearch {
 //        }
 //    }
 
-    public static <T> boolean depthFirstSearch(WordTreeNode<GridCoordinates> start, GoalFunction<T> isGoal, Stack<WordTreeNode<GridCoordinates>> result, Directions direction) {
+    public static <T> boolean depthFirstSearch(WordTreeNode<GridCoordinates> start, GoalFunction<T> isGoal, Stack<WordTreeNode<GridCoordinates>> result, Directions direction, String word) {
 
-        System.out.println("start=" + start.getValue());
+        System.out.println("start=" + start.getValue()+direction);
 
         GridCoordinates current = start.getValue();
 
@@ -66,40 +66,59 @@ public class WordTreeSearch {
 //        }
 
         //TODO: mark as in use
-        if (current != null) {
-            current.setOccupied();
+        
+
+        if (start.value != null) {
+//            System.out.println(".?"+current);
+            start.value.setState(direction);
         }
 
+//        System.out.println("pushing="+start.value);
         result.push(start);
         
-        System.out.println("last dir "+current+ " "+ direction);
+//        System.out.println("last dir "+current+ " "+ direction);
 
 //            check if we've found the goal
 //        if (isGoal.evaluate(start)) {
 //            System.out.println("reached goal");
 //            return true;
 //        }
-          if (isGoal.evaluate(start)) {
-            System.out.println("reached goal");
+          if (isGoal.evaluate(result, word.length())) {
+            System.out.println("MATCH FOUND");
             return true;
             }
 
+          
+          
 //            expand each child node in order, returning if we find the goal
         for (WordTreeNode<GridCoordinates> w : start.getChildren()) {
 
+            System.out.println("state? "+ w.value.state);
+            
+            if (w.value.state != null)
+                return false;
+        
+            
             Directions d = LetterGrid.compareCoordinates(current, w.getValue());
+                
+//            if (start.value != null && d==null){
+//                break;
+//            }
 //                
-//                if (direction==null)
-//                    d = direction;
 
             System.out.println("Comparing " + current + " vs " + w.getValue() + " = " + d);
 
             if (d != null || direction == d) {
-                if (depthFirstSearch(w, isGoal, result, d)) {
+                
+//                  System.out.println("recursing with dir "+w.value+d);
+                if (depthFirstSearch(w, isGoal, result, d, word)) {
                     return true;
                 }
             } else {
-                System.out.println("changing direction");
+//                System.out.println("changing direction");
+                System.out.println("pop in");
+
+                //TODO: not in use???    
                 result.pop();
                 return false;
             }
@@ -108,7 +127,9 @@ public class WordTreeSearch {
 
             //TODO: mark as not in use
         // No path was found
-        result.pop();
+        //System.out.println("pop out");
+        if(result.size()>1)
+            result.pop();
         return false;
     }
 

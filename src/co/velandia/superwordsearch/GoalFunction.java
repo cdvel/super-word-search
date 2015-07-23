@@ -5,11 +5,13 @@
  */
 package co.velandia.superwordsearch;
 
+import java.util.Stack;
+
 /**
  *
  * @author cesar
  */
 interface GoalFunction<T> {
 
-    boolean evaluate(WordTreeNode<GridCoordinates> o);
+    boolean evaluate(Stack<WordTreeNode<GridCoordinates>> sequence, int length);
 }
