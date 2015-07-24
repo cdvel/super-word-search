@@ -1,6 +1,4 @@
-package co.velandia.superwordsearch;
-
-import co.velandia.superwordsearch.LetterGrid.Directions;
+package co.velandia.superwordsearch.structures;
 
 /**
  *
@@ -8,46 +6,39 @@ import co.velandia.superwordsearch.LetterGrid.Directions;
  */
 public class GridCoordinates {
 
-    // TODO: revise use of visited
-    public enum CoordinatesState {
-
-        EMPTY, OCCUPPIED, VISITED
-    };
-
     int row;
     int column;
     boolean wrap = false;
-    Directions state;
+    GridDirection direction;
 
     public GridCoordinates(int row, int column) {
 //        this.index = row+column;
         this.row = row;
         this.column = column;
-        state = null;
+        direction = null;
 
     }
 
-    /**
-     * Copy constructor
-     *
-     * @param copy
-     */
     public GridCoordinates(GridCoordinates copy) {
-        this.row = copy.row;
-        this.column = copy.column;
-        this.state = copy.state;
+        row = copy.row;
+        column = copy.column;
+        direction = copy.direction;
     }
 
-    void unset() {
-        state = null;
+    public void unset() {
+        direction = null;
     }
 
-    void setState(Directions state) {
-        this.state = state;
+    public void setDirection(GridDirection dir) {
+        direction = dir;
+    }
+    
+    public GridDirection getDirection(){
+        return direction;
     }
 
-    boolean isSet() {
-        return state != null;
+    public boolean isSet() {
+        return direction != null;
     }
 
     public boolean equals(GridCoordinates obj) {
@@ -80,8 +71,8 @@ public class GridCoordinates {
     @Override
     public String toString() {
         String mark = "";
-        if (state != null)       
-            mark = (state == null) ? "_" : state.name();
+        if (direction != null)       
+            mark = (direction == null) ? "_" : direction.name();
         return "(" + row + ", " + column + ")" + mark;
     }
 
@@ -93,7 +84,5 @@ public class GridCoordinates {
         }
         return false;
     }
-    
-    
 
 }

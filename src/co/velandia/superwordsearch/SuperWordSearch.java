@@ -1,6 +1,7 @@
 package co.velandia.superwordsearch;
 
-import co.velandia.superwordsearch.LetterGrid.Directions;
+import co.velandia.superwordsearch.search.*;
+import co.velandia.superwordsearch.structures.*;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -8,25 +9,35 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.Stack;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
  * @author cesar
  */
 public class SuperWordSearch {
+    
+    public enum Mode {
+        
+        WRAP, NO_WRAP, NOT_SET
+    }
 
-    private void resetStates(List<GridCoordinates> coordinates) {
-        for (GridCoordinates coordinatePair : coordinates) {
-            coordinatePair.unset();
+    private static LetterGrid gridWorld;
+    private static Mode searchMode;
+    private static List<String> searchWords;
+    
+    public SuperWordSearch(String filename) {
+        try {
+                gridWorld = new LetterGrid();
+                searchMode = Mode.NOT_SET;
+                searchWords = new ArrayList<>();
+                loadFromFile(filename);
+        } catch (IOException ex) {
+            System.err.println("Error reading input file. Restart and try again");
         }
     }
     
@@ -37,26 +48,6 @@ public class SuperWordSearch {
     
     private List<String> getSearchWords() {
         return searchWords;
-    }
-    
-    public enum Mode {
-        
-        WRAP, NO_WRAP, NOT_SET
-    }
-    
-    private static LetterGrid gridWorld;
-    private static Mode searchMode;
-    private static List<String> searchWords;
-    
-    public SuperWordSearch() {
-        gridWorld = new LetterGrid();
-        searchMode = Mode.NOT_SET;
-        searchWords = new ArrayList<>();
-    }
-    
-    @Override
-    public String toString() {
-        return gridWorld.toString() + "mode: " + searchMode + ", searchWords: " + searchWords.toString();
     }
 
     /**
@@ -100,134 +91,116 @@ public class SuperWordSearch {
         }
     }
     
-    public void printLetterCoordinates(String letter) {
-        System.out.println(gridWorld.getLetterCoordinates(letter));
-    }
-    
-    public String getStack(Stack<WordTreeNode<GridCoordinates>> searchStack) {
-        StringBuilder out = new StringBuilder();
-        
-        for (WordTreeNode el : searchStack) {
-            out.append(" ").append(el.value);
-        }
-        
-        return out.toString();
-    }
-    
-    public boolean isMatch(Stack<WordTreeNode<GridCoordinates>> searchStack) {
-        
-        StringBuilder out = new StringBuilder();
-        Directions x = null;
-        
-        //check for duplicates
+    /**
+     * Check stack for duplicated coordinates
+     * @param searchStack
+     * @return true if <tt>searchStack</tt> has duplicates, false otherwise
+     */
+    private boolean hasDuplicates(Stack<WordTreeNode<GridCoordinates>> searchStack) {
+         
         Set set = new HashSet();
-   
-        // same direction?
+        for (WordTreeNode<GridCoordinates> node : searchStack) 
+            set.add(node.value);
+        
+        return searchStack.size() != set.size();
+    }
+    
+    /**
+     * Check whether <tt>searchStack</tt> matches <tt>wordLength</tt> and has same direction
+     * @param searchStack
+     * @param wordLength
+     * @return true if matches length and direction, false otherwise
+     */
+    private boolean isMatch(Stack<WordTreeNode<GridCoordinates>> searchStack, int wordLength) {
+        
+        StringBuilder out = new StringBuilder();
+        GridDirection dir = null;
+        
+        //stack has root and initial node
         for (int i = 2; i < searchStack.size(); i++) {
-            
-            
-            
-            if (!set.add((GridCoordinates)searchStack.get(i).value))
-            {
-                System.out.println("---------falsey");
-                return false;
-            }
-            
-             if (x==null)   
-                x = searchStack.get(i).value.state;
+            if (dir==null)
+                dir = searchStack.get(i).getValue().getDirection();
              
-             if(searchStack.get(i).value.state != x || x == null)
+             if(searchStack.get(i).getValue().getDirection() != dir || dir == null)
                  return false;
         }
         
-        System.out.println("*****set size="+set.size()+" stack"+ searchStack.size());
-//                Iterator iterator = set.iterator();
-//        while (iterator.hasNext()) {
-//            Object object = (Object) iterator.next();
-//            System.out.println("i="+object);
-//        }
-        System.out.println("stack ==="+getStack(searchStack)+" set"+set);
-        
-        return set.size()+2 == searchStack.size();
-        
+        // letters can be included only once 
+        return !hasDuplicates(searchStack) && wordLength+1==searchStack.size();
     }
     
-    public void exploreWordSets(String word) {
-        
-        Stack<WordTreeNode<GridCoordinates>> searchStack = new Stack();
-        
+    /**
+     * Generates a tree structure for <tt>word</tt>
+     * @param word
+     * @return Tree representing nodes for each letter
+     */
+    private WordTreeNode generateWordTree(String word)
+    {
+        WordTreeNode<GridCoordinates> root = new WordTreeNode(null);
         List<List<GridCoordinates>> set = new ArrayList<>();
         
-        for (char ch : word.toCharArray()) {
+        for (char ch : word.toCharArray())
             set.add(gridWorld.getLetterCoordinates("" + ch));
-        }
-        //System.out.println("set=== "+set);
-
-        //int [] optionIndex = int[4];
-        Directions dir = null;
-
-
-        WordTreeNode<GridCoordinates> root = new WordTreeNode(null);
         
-        for (List<GridCoordinates> list : set) {
+        for (List<GridCoordinates> list : set)
             root.addToLeaves(list);
-        }
-
-        /* uncomment to print search tree */
-        System.out.println(root.toString(0));
-
-        //root.dfs(root, null);
-        Directions direction = null;
         
-        WordTreeSearch.depthFirstSearch(root,
+        return root;
+    }
+    
+    
+    public String search(String word) {
+
+        Stack<WordTreeNode<GridCoordinates>> searchStack = new Stack();
+        GridDirection direction = null;
+        
+        boolean result = WordTreeSearch.depthFirstSearch(generateWordTree(word),
                 new GoalFunction< Stack<WordTreeNode<GridCoordinates>>>() {
                     
                     @Override
-                    public boolean evaluate(Stack<WordTreeNode<GridCoordinates>> sequence, int length) {
+                    public boolean evaluate(Stack<WordTreeNode<GridCoordinates>> sequence) {
                         
-                        if (sequence.size() != length+1)
+                        //filtering out early
+                        if (sequence.size() < word.length())
                             return false;
                         
-                        Directions x = null;
-                        
-//                        System.out.println("stackkk"+getStack(sequence));
-                        
-                        for (WordTreeNode<GridCoordinates> wordTreeNode : sequence) {
+                        GridDirection dir = null;
+                        for (WordTreeNode<GridCoordinates> node : sequence) {
                             
-                            // TODO: happens everytime seq is size of word
-                            if(wordTreeNode.value != null && wordTreeNode.value.state == null ){
-//                                System.out.println("%%%%%found!1"+wordTreeNode.value);
-                                return isMatch(sequence);
-                            }
-                            
-                            if (wordTreeNode.value != null && wordTreeNode.value.state != null)
+                            if (node.getValue() != null && node.getValue().getDirection() != null)
                             {
-                                if(x == null){
-//                                    System.out.println("found!2");
-                                    x = wordTreeNode.value.state;
-                                }
+                                if(dir == null)
+                                    dir = node.getValue().getDirection();
                                 
-                                if (x != wordTreeNode.value.state){
-//                                    System.out.println("found!3");
+                                if (dir != node.getValue().getDirection())
                                     return false;
-                                }
                             
+                                return isMatch(sequence, word.length());
                             }
                         }
-                        System.out.println("found!");
-                        return isMatch(sequence);
-                        
+                        return isMatch(sequence, word.length());
                     }
                 }, searchStack, direction, word);
-
         
-        for (WordTreeNode el : searchStack) {
-            System.out.print(">> " + el.value);
-        }
+        
+        
+        resetDirections(searchStack);
+        
+        if(result)
+            return ""+searchStack.get(1)+searchStack.get(searchStack.size()-1);
+        else
+            return "NOT FOUND";
     }
     
-    public void print() {
-        System.out.println(this);
+    private void resetDirections(Stack<WordTreeNode<GridCoordinates>> nodes) {
+        for (WordTreeNode node : nodes) 
+            if (node.value!=null)
+                ((GridCoordinates)node.getValue()).setDirection(null);
+    }
+    
+    @Override
+    public String toString() {
+        return gridWorld.toString() + "mode: " + searchMode + ", searchWords: " + searchWords.toString()+"\n";
     }
 
     /**
@@ -235,21 +208,30 @@ public class SuperWordSearch {
      */
     public static void main(String[] args) {
         
-        System.out.println("Please type in your input file...");
         
-        SuperWordSearch sws = new SuperWordSearch();
-        try {
-            sws.loadFromFile("C:\\sws\\3x3_wrap.txt");
-            sws.print();
+        
+            SuperWordSearch sws = new SuperWordSearch("src\\files\\3x3_no_wrap.txt");
+            
             for (String word : sws.getSearchWords()) {
-                System.out.println("\nSEARCHING... " + word);
-                sws.exploreWordSets(word);
+                System.out.println(sws.search(word));
+            }
+            
+            System.out.println("");
+                    
+            sws = new SuperWordSearch("src\\files\\3x3_wrap.txt");
+            for (String word : sws.getSearchWords()) {
+                System.out.println(sws.search(word));
+            }
+            
+            Scanner in = new Scanner(System.in);
+            
+            System.out.print("\nPlease type absolute path to your input file: ");
+            String filePath = in.nextLine();
+      
+            sws = new SuperWordSearch(filePath);
+            for (String word : sws.getSearchWords()) {
+                System.out.println(sws.search(word));
             }
 
-            //sws.print();
-        } catch (IOException ex) {
-            Logger.getLogger(SuperWordSearch.class.getName()).log(Level.SEVERE, null, ex);
-        }
     }
-    
 }

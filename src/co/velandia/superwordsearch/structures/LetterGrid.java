@@ -1,6 +1,6 @@
-package co.velandia.superwordsearch;
+package co.velandia.superwordsearch.structures;
 
-import static co.velandia.superwordsearch.SuperWordSearch.Mode;
+import co.velandia.superwordsearch.SuperWordSearch.Mode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -13,35 +13,6 @@ import java.util.Map;
  */
 public class LetterGrid {
 
-    void setRowCount(int nRows) {
-        rowCount = nRows;
-    }
-
-    void setColumnCount(int mColumns) {
-        columnCount = mColumns;
-    }
-
-    boolean isEmpty() {
-        return columnCount == 0 && rowCount == 0;
-    }
-
-    int getRowCount() {
-        return rowCount;
-    }
-
-    int getColumnCount() {
-        return columnCount;
-    }
-
-    void setMode(Mode searchMode) {
-        mode = searchMode;
-    }
-
-    public enum Directions {
-
-        N, NE, E, SE, S, SW, W, NW, NONE
-    }
-
     private static int rowCount;
     private static int columnCount;
     private static Mode mode = Mode.NO_WRAP;
@@ -49,14 +20,44 @@ public class LetterGrid {
     private Map<String, List<GridCoordinates>> letterGrid = new HashMap<>();
 
     public LetterGrid() {
-        this.columnCount = 0;
-        this.rowCount = 0;
+        columnCount = 0;
+        rowCount = 0;
+    }
+    
+    public void setRowCount(int nRows) {
+        rowCount = nRows;
     }
 
+    public void setColumnCount(int mColumns) {
+        columnCount = mColumns;
+    }
+
+    public boolean isEmpty() {
+        return columnCount == 0 && rowCount == 0;
+    }
+
+    public int getRowCount() {
+        return rowCount;
+    }
+
+    public int getColumnCount() {
+        return columnCount;
+    }
+
+    public void setMode(Mode searchMode) {
+        mode = searchMode;
+    }
+    
     public List<GridCoordinates> getLetterCoordinates(String letter) {
-        return new ArrayList<GridCoordinates>(letterGrid.get(letter));
+        return new ArrayList<>(letterGrid.get(letter));
     }
 
+    /**
+     * Fills a new letter row in the grid 
+     * @param letters
+     * @param rowIndex
+     * @param letterRowCount 
+     */
     public void setRow(char[] letters, int rowIndex, int letterRowCount) {
         int columnIndex = 0;
         GridCoordinates letterCoordinate;
@@ -64,19 +65,25 @@ public class LetterGrid {
         for (char letter : letters) {
 
             letterCoordinate = new GridCoordinates(rowIndex, columnIndex);
-            List<GridCoordinates> coordinates = this.letterGrid.get("" + letter);
+            List<GridCoordinates> coordinates = letterGrid.get("" + letter);
 
             if (coordinates == null) {
                 coordinates = new ArrayList<>();
             }
             coordinates.add(letterCoordinate);
-            this.letterGrid.put("" + letter, coordinates);
+            letterGrid.put("" + letter, coordinates);
             columnIndex++;
         }
 
     }
 
-    public static GridCoordinates shift(GridCoordinates current, Directions direction) {
+    /**
+     * Displaces <tt>current </tt> to <tt>direction</tt> 
+     * @param current
+     * @param direction
+     * @return new coordinates, otherwise <tt>current</tt>
+     */
+    public static GridCoordinates shift(GridCoordinates current, GridDirection direction) {
         GridCoordinates next = new GridCoordinates(current);
 
         switch (direction) {
@@ -113,10 +120,14 @@ public class LetterGrid {
         if (isCoordinatePairValid(next))
             return next;
         
-        // if invalid, return original coordinates
         return current;
     }
 
+    /**
+     * Wraps coordinates around the grid
+     * @param current
+     * @return new coordinate, otherwise <tt>current</tt>
+     */
     public static GridCoordinates wrapAround(GridCoordinates current) {
         if (current.row < 0) {
             current.row = rowCount - 1;
@@ -139,53 +150,58 @@ public class LetterGrid {
 
     /**
      * *
-     * Get direction between 2 adjacent coordinates, or null
+     * Get direction between adjacent coordinates<tt>x</tt> and <tt>y</tt>
      *
      * @param x
      * @param y
-     * @return
+     * @return Direction between coordinates, otherwise null
      */
-    public static Directions compareCoordinates(GridCoordinates x, GridCoordinates y) {
+    public static GridDirection compareCoordinates(GridCoordinates x, GridCoordinates y) {
 
         if (x == null || y == null) {
             return null;
         }
 
-        if (shift(x, Directions.N).equals(y)) {
-            return Directions.N;
+        if (shift(x, GridDirection.N).equals(y)) {
+            return GridDirection.N;
         }
 
-        if (shift(x, Directions.NE).equals(y)) {
-            return Directions.NE;
+        if (shift(x, GridDirection.NE).equals(y)) {
+            return GridDirection.NE;
         }
 
-        if (shift(x, Directions.E).equals(y)) {
-            return Directions.E;
+        if (shift(x, GridDirection.E).equals(y)) {
+            return GridDirection.E;
         }
 
-        if (shift(x, Directions.SE).equals(y)) {
-            return Directions.SE;
+        if (shift(x, GridDirection.SE).equals(y)) {
+            return GridDirection.SE;
         }
 
-        if (shift(x, Directions.S).equals(y)) {
-            return Directions.S;
+        if (shift(x, GridDirection.S).equals(y)) {
+            return GridDirection.S;
         }
 
-        if (shift(x, Directions.SW).equals(y)) {
-            return Directions.SW;
+        if (shift(x, GridDirection.SW).equals(y)) {
+            return GridDirection.SW;
         }
 
-        if (shift(x, Directions.W).equals(y)) {
-            return Directions.W;
+        if (shift(x, GridDirection.W).equals(y)) {
+            return GridDirection.W;
         }
 
-        if (shift(x, Directions.NW).equals(y)) {
-            return Directions.NW;
+        if (shift(x, GridDirection.NW).equals(y)) {
+            return GridDirection.NW;
         }
 
         return null;
     }
 
+    /**
+     * Sanity check for shift function
+     * @param coordinates
+     * @return true if <tt>coordinates</tt> are valid, false otherwise
+     */
     private static boolean isCoordinatePairValid(GridCoordinates coordinates) {
         return (coordinates.row >= 0 && coordinates.row < rowCount && coordinates.column >= 0 && coordinates.column < columnCount);
     }
